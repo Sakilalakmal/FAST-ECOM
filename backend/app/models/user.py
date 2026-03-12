@@ -11,6 +11,7 @@ from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin
 
 if TYPE_CHECKING:
+    from app.models.address import Address
     from app.models.associations import UserRole
     from app.models.refresh_token import RefreshToken
 
@@ -58,6 +59,10 @@ class User(ActiveMixin, ORMModel):
         cascade="all, delete-orphan",
     )
     refresh_tokens: Mapped[list[RefreshToken]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    addresses: Mapped[list[Address]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -5,6 +5,7 @@ autogeneration can discover them through a single import location.
 """
 
 from app.models.associations import UserRole
+from app.models.address import Address, AddressType
 from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin, PrimaryKeyMixin, SoftDeleteMixin, TimestampMixin
 from app.models.refresh_token import RefreshToken
@@ -13,6 +14,8 @@ from app.models.user import User
 
 __all__ = [
     "ActiveMixin",
+    "Address",
+    "AddressType",
     "ORMModel",
     "PrimaryKeyMixin",
     "RefreshToken",
