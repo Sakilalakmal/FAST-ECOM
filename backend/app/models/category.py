@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from sqlalchemy import ForeignKey, Integer, String, Text
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin
+
+if TYPE_CHECKING:
+    from app.models.product import Product
 
 
 class Category(ActiveMixin, ORMModel):
@@ -51,3 +56,4 @@ class Category(ActiveMixin, ORMModel):
         "Category",
         back_populates="parent",
     )
+    products: Mapped[list[Product]] = relationship(back_populates="category")
