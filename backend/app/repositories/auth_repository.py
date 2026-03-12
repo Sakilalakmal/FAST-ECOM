@@ -60,6 +60,18 @@ class AuthRepository:
         stmt = select(Role).where(Role.name == name, Role.deleted_at.is_(None))
         return db.scalar(stmt)
 
+    def create_role(
+        self,
+        db: Session,
+        *,
+        name: str,
+        description: str | None = None,
+    ) -> Role:
+        role = Role(name=name, description=description)
+        db.add(role)
+        db.flush()
+        return role
+
     def attach_role_to_user(self, db: Session, *, user: User, role: Role) -> UserRole:
         existing_link = db.scalar(
             select(UserRole).where(

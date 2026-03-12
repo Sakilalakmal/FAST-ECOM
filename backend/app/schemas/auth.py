@@ -36,5 +36,21 @@ class TokenResponse(BaseModel):
     refresh_expires_in: int
 
 
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class LogoutRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    refresh_token: SecretStr
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
 class AuthenticatedUserResponse(BaseModel):
     user: UserProfileResponse

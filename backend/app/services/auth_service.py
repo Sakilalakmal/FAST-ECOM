@@ -2,19 +2,26 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from jwt import InvalidTokenError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import (
     create_access_token,
     create_refresh_token,
+    decode_token,
     generate_token_jti,
     get_password_hash,
     verify_password,
 )
 from app.models.user import User
 from app.repositories.auth_repository import AuthRepository
-from app.schemas.auth import TokenResponse, UserLoginRequest, UserRegisterRequest
+from app.schemas.auth import (
+    AccessTokenResponse,
+    TokenResponse,
+    UserLoginRequest,
+    UserRegisterRequest,
+)
 from app.schemas.user import RoleResponse, UserProfileResponse
 
 
@@ -38,7 +45,23 @@ class InactiveUserError(AuthServiceError):
     pass
 
 
+class UnverifiedUserError(AuthServiceError):
+    pass
+
+
 class RefreshTokenNotFoundError(AuthServiceError):
+    pass
+
+
+class InvalidRefreshTokenError(AuthServiceError):
+    pass
+
+
+class RefreshTokenRevokedError(AuthServiceError):
+    pass
+
+
+class InsufficientRoleError(AuthServiceError):
     pass
 
 
@@ -65,11 +88,15 @@ class AuthService:
             if existing_phone:
                 raise UserAlreadyExistsError("A user with this phone number already exists.")
 
-        role = self.repository.get_role_by_name(db, name=default_role_name)
-        if role is None:
-            raise RoleNotFoundError(f"Role '{default_role_name}' was not found.")
-
         try:
+            role = self.repository.get_role_by_name(db, name=default_role_name)
+            if role is None:
+                role = self.repository.create_role(
+                    db,
+                    name=default_role_name,
+                    description="Default role for storefront customers.",
+                )
+
             user = self.repository.create_user(
                 db,
                 email=str(payload.email),
@@ -85,7 +112,7 @@ class AuthService:
             raise UserAlreadyExistsError("User registration violates a uniqueness constraint.") from exc
 
         persisted_user = self.repository.get_user_by_id(db, user_id=user.id)
-        return self._build_user_profile_response(persisted_user or user)
+        return self.build_user_profile_response(persisted_user or user)
 
     def authenticate_user(self, db: Session, *, payload: UserLoginRequest) -> User:
         user = self.repository.get_user_by_email(db, email=str(payload.email))
@@ -160,22 +187,90 @@ class AuthService:
             ),
         )
 
-    def get_user_profile(self, db: Session, *, user_id: int) -> UserProfileResponse:
+    def refresh_access_token(
+        self,
+        db: Session,
+        *,
+        refresh_token: str,
+    ) -> AccessTokenResponse:
+        stored_refresh_token = self.get_refresh_token_entity(
+            db,
+            refresh_token=refresh_token,
+            allow_revoked=False,
+        )
+        user = self.ensure_active_user(
+            self.get_user_entity(db, user_id=stored_refresh_token.user_id)
+        )
+        access_token = create_access_token(subject=str(user.id))
+
+        return AccessTokenResponse(
+            access_token=access_token.token,
+            token_type="bearer",
+            expires_in=int((access_token.expires_at - datetime.now(UTC)).total_seconds()),
+        )
+
+    def get_user_entity(self, db: Session, *, user_id: int) -> User:
         user = self.repository.get_user_by_id(db, user_id=user_id)
         if user is None:
             raise InvalidCredentialsError("User not found.")
-        return self._build_user_profile_response(user)
+        return user
 
-    def revoke_refresh_token(self, db: Session, *, jti: str) -> None:
-        refresh_token = self.repository.find_refresh_token_by_jti(db, jti=jti)
-        if refresh_token is None:
-            raise RefreshTokenNotFoundError("Refresh token not found.")
+    def ensure_active_user(self, user: User) -> User:
+        if not user.is_active:
+            raise InactiveUserError("The user account is inactive.")
+        return user
 
-        if refresh_token.revoked_at is None:
-            self.repository.revoke_refresh_token(db, refresh_token=refresh_token)
+    def get_user_profile(self, db: Session, *, user_id: int) -> UserProfileResponse:
+        user = self.ensure_active_user(self.get_user_entity(db, user_id=user_id))
+        return self.build_user_profile_response(user)
+
+    def ensure_verified_user(self, user: User) -> User:
+        if not user.is_verified:
+            raise UnverifiedUserError("The user account is not verified.")
+        return user
+
+    def logout_user(self, db: Session, *, refresh_token: str) -> None:
+        stored_refresh_token = self.get_refresh_token_entity(
+            db,
+            refresh_token=refresh_token,
+            allow_revoked=True,
+        )
+
+        if stored_refresh_token.revoked_at is None:
+            self.repository.revoke_refresh_token(db, refresh_token=stored_refresh_token)
             db.commit()
 
-    def _build_user_profile_response(self, user: User) -> UserProfileResponse:
+    def get_refresh_token_entity(
+        self,
+        db: Session,
+        *,
+        refresh_token: str,
+        allow_revoked: bool = False,
+    ):
+        try:
+            payload = decode_token(refresh_token, expected_type="refresh")
+            user_id = int(payload.sub)
+        except (ValueError, TypeError) as exc:
+            raise InvalidRefreshTokenError("Invalid refresh token.") from exc
+        except InvalidTokenError as exc:
+            raise InvalidRefreshTokenError("Invalid or expired refresh token.") from exc
+
+        if payload.jti is None:
+            raise InvalidRefreshTokenError("Refresh token is missing a token identifier.")
+
+        stored_refresh_token = self.repository.find_refresh_token_by_jti(db, jti=payload.jti)
+        if stored_refresh_token is None or stored_refresh_token.user_id != user_id:
+            raise RefreshTokenNotFoundError("Refresh token not found.")
+
+        if stored_refresh_token.expires_at <= datetime.now(UTC):
+            raise InvalidRefreshTokenError("Refresh token has expired.")
+
+        if not allow_revoked and stored_refresh_token.revoked_at is not None:
+            raise RefreshTokenRevokedError("Refresh token has been revoked.")
+
+        return stored_refresh_token
+
+    def build_user_profile_response(self, user: User) -> UserProfileResponse:
         roles = [
             RoleResponse.model_validate(user_role.role)
             for user_role in user.user_roles
