@@ -1,8 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin
+
+if TYPE_CHECKING:
+    from app.models.product import Product
 
 
 class Brand(ActiveMixin, ORMModel):
@@ -32,3 +39,4 @@ class Brand(ActiveMixin, ORMModel):
         String(512),
         nullable=True,
     )
+    products: Mapped[list[Product]] = relationship(back_populates="brand")
