@@ -11,6 +11,7 @@ from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin
 
 if TYPE_CHECKING:
+    from app.models.cart_item import CartItem
     from app.models.inventory import Inventory
     from app.models.product import Product
     from app.models.variant_selection import VariantSelection
@@ -92,3 +93,4 @@ class ProductVariant(ActiveMixin, ORMModel):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    cart_items: Mapped[list[CartItem]] = relationship(back_populates="variant")

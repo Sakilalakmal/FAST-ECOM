@@ -13,6 +13,7 @@ from app.models.mixins import ActiveMixin
 if TYPE_CHECKING:
     from app.models.address import Address
     from app.models.associations import UserRole
+    from app.models.cart import Cart
     from app.models.refresh_token import RefreshToken
 
 
@@ -63,6 +64,10 @@ class User(ActiveMixin, ORMModel):
         cascade="all, delete-orphan",
     )
     addresses: Mapped[list[Address]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    carts: Mapped[list[Cart]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

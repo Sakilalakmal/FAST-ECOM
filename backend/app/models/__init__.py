@@ -8,6 +8,8 @@ from app.models.associations import UserRole
 from app.models.address import Address, AddressType
 from app.models.base import ORMModel
 from app.models.brand import Brand
+from app.models.cart import Cart
+from app.models.cart_item import CartItem
 from app.models.category import Category
 from app.models.inventory import Inventory
 from app.models.mixins import ActiveMixin, PrimaryKeyMixin, SoftDeleteMixin, TimestampMixin
@@ -27,6 +29,8 @@ __all__ = [
     "Address",
     "AddressType",
     "Brand",
+    "Cart",
+    "CartItem",
     "Category",
     "Inventory",
     "ORMModel",

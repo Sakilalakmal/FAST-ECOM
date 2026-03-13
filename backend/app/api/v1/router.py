@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     admin_variants,
     auth,
     brands,
+    cart,
     categories,
     health,
     products,
@@ -21,6 +22,7 @@ api_router.include_router(admin_products.router)
 api_router.include_router(admin_variants.router)
 api_router.include_router(auth.router)
 api_router.include_router(brands.router)
+api_router.include_router(cart.router)
 api_router.include_router(categories.router)
 api_router.include_router(health.router)
 api_router.include_router(products.router)

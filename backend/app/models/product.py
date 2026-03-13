@@ -11,6 +11,7 @@ from app.models.base import ORMModel
 from app.models.mixins import ActiveMixin
 
 if TYPE_CHECKING:
+    from app.models.cart_item import CartItem
     from app.models.brand import Brand
     from app.models.category import Category
     from app.models.product_image import ProductImage
@@ -105,3 +106,4 @@ class Product(ActiveMixin, ORMModel):
         cascade="all, delete-orphan",
         order_by="VariantOption.sort_order",
     )
+    cart_items: Mapped[list[CartItem]] = relationship(back_populates="product")
