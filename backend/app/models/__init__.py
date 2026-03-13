@@ -13,6 +13,8 @@ from app.models.cart_item import CartItem
 from app.models.category import Category
 from app.models.inventory import Inventory
 from app.models.mixins import ActiveMixin, PrimaryKeyMixin, SoftDeleteMixin, TimestampMixin
+from app.models.order import Order, OrderStatus, PaymentStatus
+from app.models.order_item import OrderItem
 from app.models.refresh_token import RefreshToken
 from app.models.role import Role
 from app.models.product import Product
@@ -34,6 +36,10 @@ __all__ = [
     "Category",
     "Inventory",
     "ORMModel",
+    "Order",
+    "OrderItem",
+    "OrderStatus",
+    "PaymentStatus",
     "PrimaryKeyMixin",
     "Product",
     "ProductImage",
