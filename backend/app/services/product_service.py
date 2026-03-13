@@ -24,6 +24,7 @@ from app.schemas.product import (
     ProductCategorySummary,
     PublicProductListQuery,
 )
+from app.services.variant_service import VariantService
 from app.utils.slug import SlugError, generate_unique_slug, slugify
 
 
@@ -44,8 +45,13 @@ class ProductValidationError(ProductServiceError):
 
 
 class ProductService:
-    def __init__(self, repository: ProductRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: ProductRepository | None = None,
+        variant_service: VariantService | None = None,
+    ) -> None:
         self.repository = repository or ProductRepository()
+        self.variant_service = variant_service or VariantService()
 
     def create_product(self, db: Session, *, payload: ProductCreateRequest) -> ProductResponse:
         self._validate_category_and_brand(
@@ -276,6 +282,10 @@ class ProductService:
                 ProductSpecificationResponse.model_validate(specification)
                 for specification in product.specifications
             ],
+            variants=self.variant_service.build_public_variant_summaries(
+                product,
+                public_view=public_view,
+            ),
             created_at=product.created_at,
             updated_at=product.updated_at,
         )
