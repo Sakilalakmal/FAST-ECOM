@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from app.models.category import Category
     from app.models.product_image import ProductImage
     from app.models.product_specification import ProductSpecification
+    from app.models.product_variant import ProductVariant
+    from app.models.variant_option import VariantOption
 
 
 class Product(ActiveMixin, ORMModel):
@@ -92,4 +94,14 @@ class Product(ActiveMixin, ORMModel):
         back_populates="product",
         cascade="all, delete-orphan",
         order_by="ProductSpecification.sort_order",
+    )
+    variants: Mapped[list[ProductVariant]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        order_by="ProductVariant.sort_order",
+    )
+    variant_options: Mapped[list[VariantOption]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        order_by="VariantOption.sort_order",
     )

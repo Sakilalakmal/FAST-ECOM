@@ -9,7 +9,10 @@ from app.models.brand import Brand
 from app.models.category import Category
 from app.models.product import Product
 from app.models.product_image import ProductImage
+from app.models.product_variant import ProductVariant
 from app.models.product_specification import ProductSpecification
+from app.models.variant_option import VariantOption
+from app.models.variant_selection import VariantSelection
 from app.schemas.product import AdminProductListQuery, ProductSortOption, PublicProductListQuery
 
 
@@ -34,6 +37,14 @@ class ProductRepository:
                 selectinload(Product.brand),
                 selectinload(Product.images),
                 selectinload(Product.specifications),
+                selectinload(Product.variant_options).selectinload(VariantOption.values),
+                selectinload(Product.variants).selectinload(ProductVariant.inventory),
+                selectinload(Product.variants)
+                .selectinload(ProductVariant.selections)
+                .selectinload(VariantSelection.option),
+                selectinload(Product.variants)
+                .selectinload(ProductVariant.selections)
+                .selectinload(VariantSelection.option_value),
             )
             .where(Product.id == product_id, Product.deleted_at.is_(None))
         )
@@ -59,6 +70,14 @@ class ProductRepository:
                 selectinload(Product.brand),
                 selectinload(Product.images),
                 selectinload(Product.specifications),
+                selectinload(Product.variant_options).selectinload(VariantOption.values),
+                selectinload(Product.variants).selectinload(ProductVariant.inventory),
+                selectinload(Product.variants)
+                .selectinload(ProductVariant.selections)
+                .selectinload(VariantSelection.option),
+                selectinload(Product.variants)
+                .selectinload(ProductVariant.selections)
+                .selectinload(VariantSelection.option_value),
             )
             .where(func.lower(Product.slug) == slug.lower(), Product.deleted_at.is_(None))
         )

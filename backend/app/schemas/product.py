@@ -8,6 +8,8 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
+from app.schemas.variant import PublicProductVariantResponse
+
 NameStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
 SlugStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
 OptionalShortTextStr = Annotated[
@@ -227,6 +229,7 @@ class ProductResponse(BaseModel):
     sort_order: int
     images: list[ProductImageResponse]
     specifications: list[ProductSpecificationResponse]
+    variants: list[PublicProductVariantResponse] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 
