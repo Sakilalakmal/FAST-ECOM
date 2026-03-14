@@ -15,6 +15,7 @@ from app.models.inventory import Inventory
 from app.models.mixins import ActiveMixin, PrimaryKeyMixin, SoftDeleteMixin, TimestampMixin
 from app.models.order import Order, OrderStatus, PaymentStatus
 from app.models.order_item import OrderItem
+from app.models.payment import Payment, PaymentMethod
 from app.models.refresh_token import RefreshToken
 from app.models.role import Role
 from app.models.product import Product
@@ -25,6 +26,8 @@ from app.models.user import User
 from app.models.variant_option import VariantOption
 from app.models.variant_option_value import VariantOptionValue
 from app.models.variant_selection import VariantSelection
+from app.models.wishlist import Wishlist
+from app.models.wishlist_item import WishlistItem
 
 __all__ = [
     "ActiveMixin",
@@ -39,6 +42,8 @@ __all__ = [
     "Order",
     "OrderItem",
     "OrderStatus",
+    "Payment",
+    "PaymentMethod",
     "PaymentStatus",
     "PrimaryKeyMixin",
     "Product",
@@ -54,4 +59,6 @@ __all__ = [
     "VariantOption",
     "VariantOptionValue",
     "VariantSelection",
+    "Wishlist",
+    "WishlistItem",
 ]

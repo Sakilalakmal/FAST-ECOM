@@ -9,7 +9,6 @@ from app.dependencies.db import get_db_session
 from app.models.user import User
 from app.schemas.order import (
     AdminOrderStatusUpdateRequest,
-    AdminPaymentStatusUpdateRequest,
     OrderListQuery,
     OrderListResponse,
     OrderResponse,
@@ -73,24 +72,3 @@ def update_order_status(
         ) from exc
 
 
-@router.patch(
-    "/{order_id}/payment-status",
-    response_model=OrderResponse,
-    summary="Update an order payment status",
-)
-def update_payment_status(
-    order_id: int,
-    payload: AdminPaymentStatusUpdateRequest,
-    _current_user: Annotated[User, Depends(get_current_admin_user)],
-    db: Annotated[Session, Depends(get_db_session)],
-    order_service: Annotated[OrderService, Depends(get_order_service)],
-) -> OrderResponse:
-    try:
-        return order_service.update_payment_status(db, order_id=order_id, payload=payload)
-    except OrderNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    except OrderServiceError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to update the payment status.",
-        ) from exc

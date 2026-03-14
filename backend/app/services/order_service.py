@@ -14,7 +14,6 @@ from app.models.user import User
 from app.repositories.order_repository import OrderRepository
 from app.schemas.order import (
     AdminOrderStatusUpdateRequest,
-    AdminPaymentStatusUpdateRequest,
     OrderItemResponse,
     OrderListItemResponse,
     OrderListQuery,
@@ -295,30 +294,6 @@ class OrderService:
         except IntegrityError as exc:
             db.rollback()
             raise OrderServiceError("Unable to update the order status.") from exc
-
-        return self.build_order_response(order)
-
-    def update_payment_status(
-        self,
-        db: Session,
-        *,
-        order_id: int,
-        payload: AdminPaymentStatusUpdateRequest,
-    ) -> OrderResponse:
-        order = self.repository.get_order_by_id(db, order_id=order_id)
-        if order is None:
-            raise OrderNotFoundError("Order not found.")
-
-        try:
-            self.repository.update_payment_status(
-                db,
-                order=order,
-                payment_status=payload.payment_status,
-            )
-            db.commit()
-        except IntegrityError as exc:
-            db.rollback()
-            raise OrderServiceError("Unable to update the payment status.") from exc
 
         return self.build_order_response(order)
 

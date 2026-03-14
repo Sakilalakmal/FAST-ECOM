@@ -12,6 +12,7 @@ from app.models.base import ORMModel
 
 if TYPE_CHECKING:
     from app.models.order_item import OrderItem
+    from app.models.payment import Payment
 
 
 class OrderStatus(str, Enum):
@@ -26,8 +27,10 @@ class OrderStatus(str, Enum):
 class PaymentStatus(str, Enum):
     UNPAID = "unpaid"
     PENDING = "pending"
+    REQUIRES_ACTION = "requires_action"
     PAID = "paid"
     FAILED = "failed"
+    CANCELLED = "cancelled"
     REFUNDED = "refunded"
 
 
@@ -167,4 +170,8 @@ class Order(ORMModel):
         back_populates="order",
         cascade="all, delete-orphan",
         order_by="OrderItem.created_at",
+    )
+    payments: Mapped[list[Payment]] = relationship(
+        back_populates="order",
+        order_by="Payment.attempt_number",
     )
