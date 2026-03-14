@@ -14,7 +14,9 @@ if TYPE_CHECKING:
     from app.models.address import Address
     from app.models.associations import UserRole
     from app.models.cart import Cart
+    from app.models.payment import Payment
     from app.models.refresh_token import RefreshToken
+    from app.models.wishlist import Wishlist
 
 
 class User(ActiveMixin, ORMModel):
@@ -68,6 +70,11 @@ class User(ActiveMixin, ORMModel):
         cascade="all, delete-orphan",
     )
     carts: Mapped[list[Cart]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    payments: Mapped[list[Payment]] = relationship(back_populates="user")
+    wishlists: Mapped[list[Wishlist]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

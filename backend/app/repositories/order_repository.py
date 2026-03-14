@@ -9,7 +9,7 @@ from app.models.address import Address
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
 from app.models.inventory import Inventory
-from app.models.order import Order, OrderStatus, PaymentStatus
+from app.models.order import Order, OrderStatus
 from app.models.order_item import OrderItem
 from app.models.product import Product
 from app.models.product_variant import ProductVariant
@@ -204,18 +204,6 @@ class OrderRepository:
         status_value: OrderStatus,
     ) -> Order:
         order.status = status_value
-        db.add(order)
-        db.flush()
-        return order
-
-    def update_payment_status(
-        self,
-        db: Session,
-        *,
-        order: Order,
-        payment_status: PaymentStatus,
-    ) -> Order:
-        order.payment_status = payment_status
         db.add(order)
         db.flush()
         return order

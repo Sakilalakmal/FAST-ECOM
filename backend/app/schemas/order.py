@@ -44,12 +44,6 @@ class AdminOrderStatusUpdateRequest(BaseModel):
     status: OrderStatus
 
 
-class AdminPaymentStatusUpdateRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    payment_status: PaymentStatus
-
-
 class OrderShippingAddressSnapshot(BaseModel):
     full_name: str
     phone_number: str

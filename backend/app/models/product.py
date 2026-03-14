@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models.product_specification import ProductSpecification
     from app.models.product_variant import ProductVariant
     from app.models.variant_option import VariantOption
+    from app.models.wishlist_item import WishlistItem
 
 
 class Product(ActiveMixin, ORMModel):
@@ -107,3 +108,4 @@ class Product(ActiveMixin, ORMModel):
         order_by="VariantOption.sort_order",
     )
     cart_items: Mapped[list[CartItem]] = relationship(back_populates="product")
+    wishlist_items: Mapped[list[WishlistItem]] = relationship(back_populates="product")
